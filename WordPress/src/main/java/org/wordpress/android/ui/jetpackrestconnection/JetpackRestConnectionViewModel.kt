@@ -447,9 +447,6 @@ class JetpackRestConnectionViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Gets the current site from the store
-     */
     private fun getSite() =
         selectedSiteRepository.getSelectedSite() ?: error("No site is currently selected in SelectedSiteRepository")
 

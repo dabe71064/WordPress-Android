@@ -8,13 +8,13 @@ import javax.inject.Inject
 
 class JetpackModuleHelper @Inject constructor(
     private val jetpackStore: JetpackStore,
-    private val siteStore: SiteStore
+    private val siteStore: SiteStore,
 ) {
     suspend fun activateStatsModule(site: SiteModel): Result<Unit> =
         activateModule(site, Module.STATS)
 
     private suspend fun activateModule(site: SiteModel, module: Module): Result<Unit> {
-        if (isModuleActivated(site.siteId, module)) {
+        if (isModuleActivated(site, module)) {
             return Result.success(Unit)
         }
 
@@ -24,8 +24,7 @@ class JetpackModuleHelper @Inject constructor(
             }
         }
 
-        // ignore the response, just check if the module is activated now
-        return if (isModuleActivated(site.siteId, module)) {
+        return if (isModuleActivated(site, module)) {
             Result.success(Unit)
         } else {
             Result.failure(Exception("${module.moduleName} module not activated"))
@@ -33,12 +32,11 @@ class JetpackModuleHelper @Inject constructor(
     }
 
     /**
-     * Checks if the passed module is activated for the passed site. Note we always get the site from
-     * the store because it may have been changed when the module was activated above.
+     * Checks if the passed module is activated for the passed site
      */
-    private fun isModuleActivated(siteId: Long, module: Module): Boolean {
-        val site = siteStore.getSiteBySiteId(siteId) ?: return false
-        return site.isActiveModuleEnabled(module.moduleName)
+    private fun isModuleActivated(site: SiteModel, module: Module): Boolean {
+        val updatedSite = siteStore.getSiteByLocalId(site.id)
+        return updatedSite?.isActiveModuleEnabled(module.moduleName) == true
     }
 
     private enum class Module(val moduleName: String) {

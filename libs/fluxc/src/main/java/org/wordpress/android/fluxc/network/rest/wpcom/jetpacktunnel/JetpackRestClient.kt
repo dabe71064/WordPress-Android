@@ -17,7 +17,6 @@ import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunne
 import org.wordpress.android.fluxc.network.rest.wpcom.jetpacktunnel.JetpackTunnelGsonRequestBuilder.JetpackResponse.JetpackSuccess
 import org.wordpress.android.fluxc.store.JetpackStore.ActivateStatsModuleError
 import org.wordpress.android.fluxc.store.JetpackStore.ActivateStatsModuleErrorType
-import org.wordpress.android.fluxc.store.JetpackStore.ActivateStatsModuleErrorType.API_ERROR
 import org.wordpress.android.fluxc.store.JetpackStore.ActivateStatsModulePayload
 import org.wordpress.android.fluxc.store.JetpackStore.ActivateStatsModuleResultPayload
 import org.wordpress.android.fluxc.store.JetpackStore.JetpackInstallError
@@ -99,12 +98,7 @@ class JetpackRestClient @Inject constructor(
         )
         return when (response) {
             is JetpackSuccess -> {
-                if (response.data?.code == "success") {
-                    ActivateStatsModuleResultPayload(true, payload.site)
-                } else {
-                    val error = ActivateStatsModuleError(API_ERROR)
-                    ActivateStatsModuleResultPayload(error, payload.site)
-                }
+                ActivateStatsModuleResultPayload(true, payload.site)
             }
             is JetpackError -> {
                 val errorType = NetworkErrorMapper.map(
