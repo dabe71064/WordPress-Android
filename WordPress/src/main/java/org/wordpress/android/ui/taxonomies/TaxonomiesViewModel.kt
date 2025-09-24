@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.wordpress.android.R
 import org.wordpress.android.fluxc.store.AccountStore
@@ -24,6 +25,13 @@ import org.wordpress.android.util.AppLog
 import org.wordpress.android.util.NetworkUtilsWrapper
 import org.wordpress.android.fluxc.model.TermModel
 import org.wordpress.android.fluxc.model.SiteModel
+import org.wordpress.android.fluxc.network.rest.wpapi.rs.WpApiClientProvider
+import org.wordpress.android.fluxc.network.rest.wpapi.taxonomy.TaxonomyRsApiRestClient
+import org.wordpress.android.fluxc.store.TaxonomyStore.FetchTermsResponsePayload
+import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyError
+import org.wordpress.android.fluxc.store.TaxonomyStore.TaxonomyErrorType
+import rs.wordpress.api.kotlin.WpRequestResult
+import uniffi.wp_api.CategoryListParams
 import uniffi.wp_api.WpApiParamOrder
 import javax.inject.Inject
 import javax.inject.Named
@@ -32,7 +40,7 @@ import javax.inject.Named
 class TaxonomiesViewModel @Inject constructor(
     @Named(UI_THREAD) private val mainDispatcher: CoroutineDispatcher,
     private val appLogWrapper: AppLogWrapper,
-    private val taxonomyStore: TaxonomyStore,
+    private val wpApiClientProvider: WpApiClientProvider,
     sharedPrefs: SharedPreferences,
     networkUtilsWrapper: NetworkUtilsWrapper,
     selectedSiteRepository: SelectedSiteRepository,
@@ -51,7 +59,6 @@ class TaxonomiesViewModel @Inject constructor(
     val selectedTerm = _selectedTerm.asStateFlow()
 
     private var selectedTermModel: TermModel? = null
-    private var fetchJob: Job? = null
 
     override val emptyView = DataViewEmptyView(
         messageRes = R.string.taxonomies_empty,
@@ -67,18 +74,7 @@ class TaxonomiesViewModel @Inject constructor(
     private val _uiEvent = MutableStateFlow<UiEvent?>(null)
     val uiEvent = _uiEvent
 
-    override fun getSupportedFilters(): List<DataViewDropdownItem> {
-        return listOf(
-            DataViewDropdownItem(
-                id = TaxonomyFilterType.Category.id,
-                titleRes = R.string.taxonomies_filter_categories
-            ),
-            DataViewDropdownItem(
-                id = TaxonomyFilterType.Tag.id,
-                titleRes = R.string.taxonomies_filter_tags
-            )
-        )
-    }
+    override fun getSupportedFilters(): List<DataViewDropdownItem> = listOf()
 
     override fun getSupportedSorts(): List<DataViewDropdownItem> {
         return listOf(
@@ -137,7 +133,7 @@ class TaxonomiesViewModel @Inject constructor(
             else -> TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY
         }
 
-        val terms = taxonomyStore.getTermsForSite(site, taxonomyName)
+        val terms = fetchPostCategories(site)
 
         var filteredTerms = if (searchQuery.isNotEmpty()) {
             terms.filter { term ->
@@ -166,17 +162,43 @@ class TaxonomiesViewModel @Inject constructor(
             else -> filteredTerms.sortedBy { it.name.lowercase() }
         }
 
-        // Simulate pagination
-        val startIndex = (page - 1) * PAGE_SIZE
-        val endIndex = minOf(startIndex + PAGE_SIZE, filteredTerms.size)
-        val paginatedTerms = if (startIndex < filteredTerms.size) {
-            filteredTerms.subList(startIndex, endIndex)
-        } else {
-            emptyList()
+
+        appLogWrapper.d(AppLog.T.MAIN, "Fetched ${filteredTerms.size} terms for taxonomy: $taxonomyName")
+        return@withContext filteredTerms.map { termToDataViewItem(it) }
+    }
+
+    private suspend fun fetchPostCategories(site: SiteModel): List<TermModel> {
+        val client = wpApiClientProvider.getWpApiClient(site)
+
+        val categoriesResponse = client.request { requestBuilder ->
+            requestBuilder.categories().listWithEditContext(
+                CategoryListParams()
+            )
         }
 
-        appLogWrapper.d(AppLog.T.MAIN, "Fetched ${paginatedTerms.size} terms for taxonomy: $taxonomyName")
-        return@withContext paginatedTerms.map { termToDataViewItem(it) }
+        return when (categoriesResponse) {
+            is WpRequestResult.Success -> {
+                appLogWrapper.d(AppLog.T.POSTS, "Fetched categories list: ${categoriesResponse.response.data.size}")
+                categoriesResponse.response.data.map { category ->
+                    TermModel(
+                        category.id.toInt(),
+                        site.id,
+                        category.id,
+                        TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY,
+                        category.name,
+                        category.slug,
+                        category.description,
+                        0,
+                        category.count.toInt()
+                    )
+                }
+            }
+
+            else -> {
+                appLogWrapper.e(AppLog.T.POSTS, "Fetch categories list failed: $categoriesResponse")
+                emptyList()
+            }
+        }
     }
 
     private fun termToDataViewItem(term: TermModel): DataViewItem {

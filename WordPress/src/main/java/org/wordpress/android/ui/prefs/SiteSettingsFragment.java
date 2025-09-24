@@ -1053,7 +1053,7 @@ public class SiteSettingsFragment extends PreferenceFragment
         // .com sites hide the Account category, self-hosted sites hide the Related Posts preference
         if (!isAccessedViaWPComRest) {
             // self-hosted, non-jetpack site
-            removeNonSelfHostedPreferences();
+//            removeNonSelfHostedPreferences();
         } else if (mSite.isJetpackConnected()) {
             // jetpack site
             removeNonJetpackPreferences();
