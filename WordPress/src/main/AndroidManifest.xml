@@ -432,6 +432,10 @@
             android:theme="@style/WordPress.NoActionBar"
             android:label="@string/subscribers"/>
 
+        <activity android:name=".ui.taxonomies.TaxonomiesActivity"
+            android:theme="@style/WordPress.NoActionBar"
+            android:label="@string/taxonomies"/>
+
         <!-- Deep Linking Activity -->
         <activity
             android:name="org.wordpress.android.ui.deeplinks.DeepLinkingIntentReceiverActivity"

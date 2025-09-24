@@ -125,6 +125,7 @@ import org.wordpress.android.ui.stockmedia.StockMediaPickerActivity;
 import org.wordpress.android.ui.subscribers.SubscribersActivity;
 import org.wordpress.android.ui.suggestion.SuggestionActivity;
 import org.wordpress.android.ui.suggestion.SuggestionType;
+import org.wordpress.android.ui.taxonomies.TaxonomiesActivity;
 import org.wordpress.android.ui.themes.ThemeBrowserActivity;
 import org.wordpress.android.ui.utils.PreMigrationDeepLinkData;
 import org.wordpress.android.util.AppLog;
@@ -1770,7 +1771,7 @@ public class ActivityLauncher {
     }
 
     public static void showCategoriesList(@NonNull Context context, @NonNull SiteModel site) {
-        Intent intent = new Intent(context, CategoriesListActivity.class);
+        Intent intent = new Intent(context, TaxonomiesActivity.class);
         intent.putExtra(WordPress.SITE, site);
         context.startActivity(intent);
     }
