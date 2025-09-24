@@ -42,11 +42,6 @@ fun AddTaxonomyScreen(
     val descriptionState = remember { mutableStateOf("") }
     val selectedTaxonomyState = remember { mutableStateOf(TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY) }
 
-    val taxonomyOptions = listOf(
-        TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY to stringResource(R.string.taxonomies_category),
-        TaxonomyStore.DEFAULT_TAXONOMY_TAG to stringResource(R.string.taxonomies_tag)
-    )
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -88,41 +83,6 @@ fun AddTaxonomyScreen(
                     minLines = 3,
                     maxLines = 5
                 )
-
-                // Taxonomy Type Selection
-                Text(
-                    text = stringResource(R.string.taxonomies_type),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Medium
-                )
-
-                Column(
-                    modifier = Modifier.selectableGroup()
-                ) {
-                    taxonomyOptions.forEach { (value, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = selectedTaxonomyState.value == value,
-                                    onClick = { selectedTaxonomyState.value = value },
-                                    role = Role.RadioButton
-                                )
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = selectedTaxonomyState.value == value,
-                                onClick = null
-                            )
-                            Text(
-                                text = label,
-                                modifier = Modifier.padding(start = 8.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
             }
         }
 
@@ -157,29 +117,5 @@ fun AddTaxonomyScreen(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
-        // Help Text
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.taxonomies_add_help_title),
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = stringResource(R.string.taxonomies_add_help_description),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
     }
 }

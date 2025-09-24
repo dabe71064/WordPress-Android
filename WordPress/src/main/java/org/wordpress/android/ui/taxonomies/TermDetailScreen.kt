@@ -62,11 +62,6 @@ fun TermDetailScreen(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                DetailRow(
-                    label = stringResource(R.string.taxonomies_taxonomy),
-                    value = term.taxonomy.replaceFirstChar { it.uppercase() }
-                )
-
                 if (term.description?.isNotEmpty() == true) {
                     DetailRow(
                         label = stringResource(R.string.taxonomies_description),
@@ -84,20 +79,8 @@ fun TermDetailScreen(
                 }
 
                 DetailRow(
-                    label = stringResource(R.string.taxonomies_post_count),
+                    label = stringResource(R.string.taxonomies_count),
                     value = "${term.postCount}"
-                )
-
-                if (term.parentRemoteId > 0) {
-                    DetailRow(
-                        label = stringResource(R.string.taxonomies_parent_id),
-                        value = "${term.parentRemoteId}"
-                    )
-                }
-
-                DetailRow(
-                    label = stringResource(R.string.taxonomies_remote_id),
-                    value = "${term.remoteTermId}"
                 )
             }
         }
@@ -131,35 +114,6 @@ fun TermDetailScreen(
                     modifier = Modifier.padding(end = 8.dp)
                 )
                 Text(stringResource(R.string.delete))
-            }
-        }
-
-        if (term.taxonomy == TaxonomyStore.DEFAULT_TAXONOMY_CATEGORY && term.postCount > 0) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.taxonomies_usage_info),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(
-                            R.string.taxonomies_used_in_posts,
-                            term.postCount
-                        ),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
             }
         }
     }

@@ -84,11 +84,11 @@ class TaxonomiesViewModel @Inject constructor(
         return listOf(
             DataViewDropdownItem(
                 id = TaxonomySortType.Name.id,
-                titleRes = R.string.taxonomies_sort_name
+                titleRes = R.string.taxonomies_name
             ),
             DataViewDropdownItem(
                 id = TaxonomySortType.PostCount.id,
-                titleRes = R.string.taxonomies_sort_post_count
+                titleRes = R.string.taxonomies_count
             ),
         )
     }
